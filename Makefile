@@ -35,6 +35,10 @@ lunr.js: $(SRC)
 lunr.min.js: lunr.js
 	${UGLIFYJS} --compress --mangle --comments < $< > $@
 
+package.json: build/package.json.template
+	cat $< | sed "s/@VERSION/${VERSION}/" > $@
+	npm install
+
 %.json: build/%.json.template
 	cat $< | sed "s/@VERSION/${VERSION}/" > $@
 
@@ -44,7 +48,7 @@ size: lunr.min.js
 test_server:
 	${NODE} server.js ${SERVER_PORT}
 
-test:
+test: package.json
 	@${NODE} server.js ${TEST_PORT} > /dev/null 2>&1 & echo "$$!" > server.pid
 	@${PHANTOMJS} test/env/runner.js http://localhost:${TEST_PORT}/test 2> /dev/null
 	@cat server.pid | xargs kill
